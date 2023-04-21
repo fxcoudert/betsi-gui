@@ -84,7 +84,7 @@ class BETSI_gui(QMainWindow):
         print(f'Imported directory: {Path(dir_path).name}')
         self.betsi_widget.analyse_directory(dir_path)
         
-        ## New lines added
+        
     def import_file(self):
         ## file_path = QFileDialog.getOpenFileName(
         ##     self, 'Select File', os.getcwd(), '*.csv')[0]
@@ -101,7 +101,7 @@ class BETSI_gui(QMainWindow):
         paths = [u.toLocalFile() for u in urls]
         extensions = [os.path.splitext(p)[-1] for p in paths]
         # accept files only for now.
-        ## New lines added
+        
         ##if all(dt == 'file' for dt in drag_type) and all(ext == '.csv' for ext in extensions):
         if all(dt == 'file' for dt in drag_type) and all(ext in ['.csv', '.aif', '.txt'] for ext in extensions):
             e.accept()
@@ -116,13 +116,13 @@ class BETSI_gui(QMainWindow):
         paths = [u.toLocalFile() for u in urls]
 
         # Single path to csv file
-        ## new lines added
+        
         ##if len(paths) == 1 and Path(paths[0]).suffix == '.csv':
         if len(paths) == 1 and Path(paths[0]).suffix in ['.csv', '.aif', '.txt']:
             self.betsi_widget.target_filepath = paths[0]
             self.betsi_widget.populate_table(csv_path=paths[0])
             print(f'Imported file: {Path(paths[0]).name}')
-            ## New lines added
+            
             self.betsi_widget.bet_object = None
             self.betsi_widget.bet_filter_result = None
             
@@ -191,7 +191,7 @@ class BETSI_widget(QWidget):
         self.criteria_box.setMaximumWidth(500)
         self.criteria_box.setMaximumHeight(800)
         self.criteria_box.setMinimumWidth(400)
-        #self.criteria_box.setMaximumHeight(650)
+        #self.criteria_box.setMinimumHeight(650)
         self.min_points_label = QLabel(self.criteria_box)
         self.min_points_label.setText('Minimum number of points in the linear region: [3,10]')
         self.min_points_edit = QLineEdit()
@@ -209,7 +209,7 @@ class BETSI_widget(QWidget):
         self.rouq4_edit = QLineEdit()
         self.rouq4_edit.setMaximumWidth(75)
         self.rouq4_slider = QSlider(QtCore.Qt.Horizontal)
-        ## New lines added
+        
         self.adsorbate_label = QLabel('Adsorbate:')
         self.adsorbate_combo_box = QComboBox()
         self.adsorbate_combo_box.addItems(["N2", "Ar", "Kr", "Xe", "CO2", "Custom"])
@@ -266,7 +266,7 @@ class BETSI_widget(QWidget):
         ##self.min_points_slider.valueChanged.connect(
         ##    self.min_points_slider_changed)
 
-        ## New lines added
+        
         self.adsorbate_combo_box.activated.connect(self.adsorbate_combo_box_changed)
         ##self.adsorbate_cross_section_edit.returnPressed.connect(self.adsorbate_related_edit_changed)
         self.adsorbate_cross_section_edit.editingFinished.connect(self.adsorbate_related_edit_changed)
@@ -316,7 +316,7 @@ class BETSI_widget(QWidget):
         ##    self.rouq4_slider, criteria_layout.rowCount(), 1, 1, 2)
         criteria_layout.addWidget(
             self.rouq5_tick, criteria_layout.rowCount(), 1)
-        ## New lines added
+        
         criteria_layout.addWidget(
             self.adsorbate_label, criteria_layout.rowCount(), 1)
         criteria_layout.addWidget(
@@ -368,7 +368,7 @@ class BETSI_widget(QWidget):
 
     def maybe_run_calculation(self):
         self.check_rouq_compatibility()
-        ## New lines added
+        
         self.check_adsorbate_compatibility()
         ##if self.target_filepath is not None:
         if self.target_filepath is not None:
@@ -428,7 +428,7 @@ class BETSI_widget(QWidget):
         cross_sectional_area = float(self.adsorbate_cross_section_edit.text())
         molar_volume = float(self.adsorbate_molar_volume_edit.text())
 
-        ## New lines or modifications made
+        
         # Retrieve the BETSI results object if non-existent
         if self.bet_object is None:
             pressure, q_adsorbed, comments_to_data = get_data(input_file=self.target_filepath)
@@ -461,11 +461,11 @@ class BETSI_widget(QWidget):
         if not self.bet_filter_result.has_valid_areas:
             iter_num = 0
             self.bet_object.comments_to_data['interpolated_points_added'] = True
-            while (not self.bet_filter_result.has_valid_areas) and (iter_num < 3):
+            while (not self.bet_filter_result.has_valid_areas) and (iter_num < 20):
                 print('Adding extra interpolated points to the data')
                 
-                pressure = self.bet_object.pressure
-                q_adsorbed = self.bet_object.q_adsorbed
+                ##pressure = self.bet_object.pressure
+                ##q_adsorbed = self.bet_object.q_adsorbed
                 comments_to_data = self.bet_object.comments_to_data
                 interpolated_points_added = self.bet_object.comments_to_data['interpolated_points_added']
                 original_pressure_data = self.bet_object.original_pressure_data
@@ -473,7 +473,7 @@ class BETSI_widget(QWidget):
                 
                 self.bet_object = None
                 self.bet_filter_result = None
-                pressure_added_points, q_adsorbed_added_points = isotherm_pchip_reconstruction(pressure, q_adsorbed)
+                pressure_added_points, q_adsorbed_added_points = isotherm_pchip_reconstruction(original_pressure_data, original_q_adsorbed_data, (iter_num+1)*round(len(original_pressure_data)/1.5))
                 self.bet_object = BETResult(pressure_added_points, q_adsorbed_added_points)
                 self.bet_object.comments_to_data = comments_to_data
                 self.bet_object.comments_to_data['interpolated_points_added'] = interpolated_points_added
@@ -528,7 +528,7 @@ class BETSI_widget(QWidget):
                 information = "Note(s):\n" + information
                 self.show_dialog(warnings, information)
     
-    ## New lines addedd        
+            
     def show_dialog(self, warnings, information):
         dialog = QMessageBox()
         dialog.setText(warnings)
@@ -594,7 +594,7 @@ class BETSI_widget(QWidget):
         cross_sectional_area = float(self.adsorbate_cross_section_edit.text())
         molar_volume = float(self.adsorbate_molar_volume_edit.text())
         
-        ## New lines added
+        
         ##csv_paths = Path(dir_path).glob('*.csv')
         csv_paths = Path(dir_path).glob('*.csv')
         aif_paths = Path(dir_path).glob('*.aif')
@@ -642,7 +642,7 @@ class BETSI_widget(QWidget):
         self.rouq4_edit.setText('20')
         self.min_points_edit.setText('10')
         
-        ## New lines added
+        
         ## set defaults for adsorbate related parameters
         self.adsorbate_combo_box.setCurrentIndex(0)
         #self.adsorbate_cross_section_edit.setText('0.0')
@@ -683,7 +683,7 @@ class BETSI_widget(QWidget):
             plt.close(fig=self.current_fig)
             plt.close(fig=self.current_fig_2)
         
-        ## New lines added here
+        
         ##reset the parameters to defaults
         self.target_filepath = None
         self.current_targetpath_label.setText(

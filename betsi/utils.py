@@ -18,19 +18,28 @@ def get_data(input_file):
     """
     input_file = Path(input_file)
 
-    if str(input_file).find('.txt') != -1 or str(input_file).find('.aif') != -1:
-        pressure, q_adsorbed = get_data_for_txt_aif(str(input_file))
+    if str(input_file).find('.txt') != -1 or str(input_file).find('.aif') != -1 or str(input_file).find('.csv') != -1:
+        pressure, q_adsorbed = get_data_for_txt_aif_csv(str(input_file))
     else:
-        try:
-            data = np.loadtxt(str(input_file), skiprows=0, delimiter=',')
-            pressure = data[:, 0]
-            q_adsorbed = data[:, 1]
-        except ValueError:
-            data = np.loadtxt(str(input_file), skiprows=1, delimiter=',')
-            pressure = data[:, 0]
-            q_adsorbed = data[:, 1]
+        pressure = np.array([])
+        q_adsorbed = np.array([])
+        
+    if len(q_adsorbed) > 0:
+        start_index = np.argmax(q_adsorbed > 0)
+        pressure = pressure[start_index:]
+        q_adsorbed = q_adsorbed[start_index:]
+        
+    # else:
+    #     try:
+    #         data = np.loadtxt(str(input_file), skiprows=0, delimiter=',')
+    #         pressure = data[:, 0]
+    #         q_adsorbed = data[:, 1]
+    #     except ValueError:
+    #         data = np.loadtxt(str(input_file), skiprows=1, delimiter=',')
+    #         pressure = data[:, 0]
+    #         q_adsorbed = data[:, 1]
     
-    ## New lines added here
+    
     comments_to_data = {'has_negative_pressure_points': False,\
                         'monotonically_increasing_pressure': True,\
                         'rel_pressure_between_0_and_1': True}
@@ -94,7 +103,7 @@ def get_pchip_interpolation(pressure,q_adsorbed):
     """
     return PchipInterpolator(pressure,q_adsorbed, axis =0, extrapolate=None)
 
-def isotherm_pchip_reconstruction(pressure, q_adsorbed):
+def isotherm_pchip_reconstruction(pressure, q_adsorbed, num_of_interpolated_points):
     """ Fits isotherm with a pchip interpolation. Can use this to
     calculate BET area for difficult isotherms
     
@@ -110,9 +119,9 @@ def isotherm_pchip_reconstruction(pressure, q_adsorbed):
     ## pressure = x_range
     ## q_adsorbed = y_pchip
     
-    ## New lines added from here
+    
     ## Add new interpolated points using pchip interpolation while having the original data points in the list as well
-    x_range = np.linspace(np.log10(pressure[0]), np.log10(pressure[len(pressure) -1 ]), len(pressure))
+    x_range = np.linspace(np.log10(pressure[0]), np.log10(pressure[len(pressure) -1 ]), num_of_interpolated_points)
     delta_x = abs(x_range[1] - x_range[0])/2
     for p in np.log10(pressure[1:-1]):
         to_be_deleted_indexes = []
@@ -135,7 +144,7 @@ def isotherm_pchip_reconstruction(pressure, q_adsorbed):
     
     return pressure_new, q_adsorbed_new
         
-def get_data_for_txt_aif(input_file):
+def get_data_for_txt_aif_csv(input_file):
     """ Read pressure and Nitrogen uptake data from file if the file extension is *.txt or *.aif.    
     this function will be called in the get_data() function, and should not be called alone anywhere in the code
     as it might cause some errors.

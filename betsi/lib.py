@@ -220,7 +220,7 @@ class BETFilterAppliedResults:
 
         # Filter results that have less than the minimum points
         min_points = kwargs.get('min_num_pts', 10)
-        filter_mask = filter_mask * (bet_result.point_count > min_points)
+        filter_mask = filter_mask * (bet_result.point_count >= min_points)
 
         # Block out results that have less than the minimum R2
         min_r2 = kwargs.get('min_r2', 0.9)
@@ -261,7 +261,7 @@ class BETFilterAppliedResults:
             self.valid_calc_pressures = bet_result.calc_pressure[self.valid_indices]
             self.valid_nm = bet_result.nm[self.valid_indices]
     
-            ## New lines added
+            
             ## was needed in the plotting.py file
             self.pc_errors = bet_result.pc_error
     

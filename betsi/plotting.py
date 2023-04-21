@@ -191,9 +191,9 @@ def create_matrix_plot(bet_filtered, rouq3, rouq4, name, fig=None):
     ax = fig.add_subplot(gs[3:6,0])
     plot_linear_y(bet_filtered, ax)
 
-    # Plot "Filtered BET areas"
+    # Plot "Filtered BET Areas"
     if not rouq3 and not rouq4:
-        ## New lines added
+        
         x_coords = bet_filtered.valid_bet_areas
         y_coords = bet_filtered.valid_pc_errors
         pc_error_higher_than_290_indexes = np.where(y_coords > 290)[0]
@@ -216,7 +216,7 @@ def create_matrix_plot(bet_filtered, rouq3, rouq4, name, fig=None):
     ax = fig.add_subplot(gs[6:9,0])
     plot_monolayer_loadings(bet_filtered, ax)
 
-    # Plot "Distribution of filtered BET areas"
+    # Plot "Distribution of Filtered BET Areas"
     ax = fig.add_subplot(gs[6:9,1])
     plot_box_and_whisker(bet_filtered, ax)
 
@@ -410,7 +410,7 @@ def plot_area_error_1(bet_filtered, ax=None, ax2=None):
 
     # Set axis details
     mpl.rc('font', family='Arial',size=9)
-    ax.set_title('Filtered BET areas ', fontname="Arial")
+    ax.set_title('Filtered BET Areas ', fontname="Arial")
     ax2.set_xlabel(r'BET Area $\mathregular{m^2 g^{-1}}$', fontname="Arial", fontsize = '9')
     ax2.set_ylabel(r'Percentage Error %', fontname="Arial", fontsize = '9')
     ax2.yaxis.set_label_coords(-0.1, 0.78)
@@ -427,7 +427,7 @@ def plot_area_error_1(bet_filtered, ax=None, ax2=None):
     
     ##x_coords_nonvalid = np.array([x for x in x_coords if x not in bet_filtered.valid_knee_bet_areas])
     ##y_coords_nonvalid = np.array([y for y in y_coords if y not in bet_filtered.valid_knee_pc_errors])
-    ## New lines added
+    
     ## Find indices that are in valid_indices but not in valid_knee_indices
     temp_x = []
     temp_y = []
@@ -449,7 +449,7 @@ def plot_area_error_1(bet_filtered, ax=None, ax2=None):
 
 
     # Scatter plot of the Error across valid areas
-    ## New lines added
+    
     ax.scatter(x_coords_nonvalid, y_coords_nonvalid, color='red', edgecolors='red', picker=5, alpha =0.5)
     ax.scatter(bet_filtered.valid_knee_bet_areas, bet_filtered.valid_knee_pc_errors, color='b', edgecolors='b', marker='s', picker=5, alpha=0.5)
     ax.scatter(bet_filtered.bet_areas[min_i, min_j], bet_filtered.pc_error[min_i, min_j], marker='s', color='yellow', edgecolors='yellow')
@@ -504,7 +504,7 @@ def plot_area_error_2(bet_filtered, ax=None):
         ax = fig.add_subplot(1, 1, 1)
 
     # Set axis details
-    ax.set_title('Filtered BET areas ', fontname="Arial")
+    ax.set_title('Filtered BET Areas ', fontname="Arial")
     ax.set_xlabel(r'BET Area $\mathregular{m^2 g^{-1}}$', fontname="Arial", fontsize = '9')
     ax.set_ylabel(r'Percentage Error %', fontname="Arial", fontsize = '9')
     ax.tick_params(axis='both', which='major', labelsize=9)
@@ -514,7 +514,7 @@ def plot_area_error_2(bet_filtered, ax=None):
     y_coords = bet_filtered.valid_pc_errors
     ##x_coords_nonvalid = np.array([x for x in x_coords if x not in bet_filtered.valid_knee_bet_areas])
     ##y_coords_nonvalid = np.array([y for y in y_coords if y not in bet_filtered.valid_knee_pc_errors])
-    ## New lines added
+    
     ## Find indices that are in valid_indices but not in valid_knee_indices
     temp_x = []
     temp_y = []
@@ -620,7 +620,7 @@ def plot_box_and_whisker(bet_filtered, ax=None):
 
     # Set axis details.
     mpl.rc('font', family='Arial',size=9)
-    ax.set_title('Distribution of filtered BET Areas', fontname="Arial")
+    ax.set_title('Distribution of Filtered BET Areas', fontname="Arial")
     ax.set_ylabel(r'BET Area $\mathregular{m^2 g^{-1}}$', fontname="Arial", fontsize = '9')
     ax.tick_params(axis='both', which='major', labelsize=9)
     ax.tick_params(axis='both', which='minor', labelsize=9)
