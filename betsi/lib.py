@@ -175,9 +175,10 @@ class BETResult:
                 self.pc_error[i, j] = (
                     self.error[i, j] / self.corresponding_pressure_pchip[i,j]) * 100.
 
-                # ROUQUEROL CRITERIA 5. Linear region must end at the knee
-                if j == self.knee_index:
-                    self.rouq5[i, j] = 1
+                ### ROUQUEROL CRITERIA 5. Linear region must end at the knee
+                ##if j == self.knee_index:
+                ##    self.rouq5[i, j] = 1
+                self.rouq5[i, j] = 1
 
 class BETFilterAppliedResults:
     """
@@ -209,9 +210,12 @@ class BETFilterAppliedResults:
             max_perc_error = kwargs.get('max_perc_error', 20)
             filter_mask = filter_mask * (bet_result.pc_error < max_perc_error)
 
-        if kwargs.get('use_rouq5', False):
+        ##if kwargs.get('use_rouq5', False):
+        ##    filter_mask = filter_mask * bet_result.rouq5
+        if kwargs.get('use_rouq5', True):
             filter_mask = filter_mask * bet_result.rouq5
         
+        self.use_rouq5 = kwargs.get('use_rouq5', True)
         adsorbate = kwargs.get('adsorbate', "N2")
         
         if adsorbate == "Custom":
@@ -272,8 +276,11 @@ class BETFilterAppliedResults:
             filtered_pcerrors = bet_result.pc_error + 1000.0 * (1 - filter_mask)
             knee_filtered_pcerrors = bet_result.pc_error + \
                 1000.0 * (1 - knee_filter)
-            min_i, min_j = np.unravel_index(
-                np.argmin(knee_filtered_pcerrors), filtered_pcerrors.shape)
+            
+            if self.use_rouq5:
+                min_i, min_j = np.unravel_index(np.argmin(knee_filtered_pcerrors), filtered_pcerrors.shape)
+            else:
+                min_i, min_j = np.unravel_index(np.argmin(filtered_pcerrors), filtered_pcerrors.shape)
             self.min_i = min_i
             self.min_j = min_j
     

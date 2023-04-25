@@ -89,7 +89,7 @@ class BETSI_gui(QMainWindow):
         ## file_path = QFileDialog.getOpenFileName(
         ##     self, 'Select File', os.getcwd(), '*.csv')[0]
         file_path = QFileDialog.getOpenFileName(
-            self, 'Select File', os.getcwd(), "*.csv *.aif *.txt")[0]
+            self, 'Select File', os.getcwd(), "*.csv *.aif *.txt *.XLS")[0]
         self.betsi_widget.target_filepath = file_path
         self.betsi_widget.populate_table(csv_path=file_path)
         print(f'Imported file: {Path(file_path).name}')
@@ -103,7 +103,7 @@ class BETSI_gui(QMainWindow):
         # accept files only for now.
         
         ##if all(dt == 'file' for dt in drag_type) and all(ext == '.csv' for ext in extensions):
-        if all(dt == 'file' for dt in drag_type) and all(ext in ['.csv', '.aif', '.txt'] for ext in extensions):
+        if all(dt == 'file' for dt in drag_type) and all(ext in ['.csv', '.aif', '.txt', '.XLS'] for ext in extensions):
             e.accept()
         elif len(drag_type) == 1 and os.path.isdir(paths[0]):
             e.ignore()
@@ -118,7 +118,7 @@ class BETSI_gui(QMainWindow):
         # Single path to csv file
         
         ##if len(paths) == 1 and Path(paths[0]).suffix == '.csv':
-        if len(paths) == 1 and Path(paths[0]).suffix in ['.csv', '.aif', '.txt']:
+        if len(paths) == 1 and Path(paths[0]).suffix in ['.csv', '.aif', '.txt', '.XLS']:
             self.betsi_widget.target_filepath = paths[0]
             self.betsi_widget.populate_table(csv_path=paths[0])
             print(f'Imported file: {Path(paths[0]).name}')
@@ -188,9 +188,9 @@ class BETSI_widget(QWidget):
 
         # add a group box containing controls
         self.criteria_box = QGroupBox("BET area selection criteria")
-        self.criteria_box.setMaximumWidth(500)
-        self.criteria_box.setMaximumHeight(800)
-        self.criteria_box.setMinimumWidth(400)
+        self.criteria_box.setMaximumWidth(700)
+        self.criteria_box.setMaximumHeight(1000)
+        self.criteria_box.setMinimumWidth(500)
         #self.criteria_box.setMinimumHeight(650)
         self.min_points_label = QLabel(self.criteria_box)
         self.min_points_label.setText('Minimum number of points in the linear region: [3,10]')
@@ -205,14 +205,14 @@ class BETSI_widget(QWidget):
         self.rouq2_tick = QCheckBox("Rouquerol criterion 2: Positive C")
         self.rouq3_tick = QCheckBox("Rouquerol criterion 3: Pressure in linear range")
         self.rouq4_tick = QCheckBox("Rouquerol criterion 4: Error in %, [5,75]")
-        self.rouq5_tick = QCheckBox("Rouquerol criterion 5: End at the knee")
+        self.rouq5_tick = QCheckBox("BETSI criterion: End at the knee")
         self.rouq4_edit = QLineEdit()
         self.rouq4_edit.setMaximumWidth(75)
         self.rouq4_slider = QSlider(QtCore.Qt.Horizontal)
         
         self.adsorbate_label = QLabel('Adsorbate:')
         self.adsorbate_combo_box = QComboBox()
-        self.adsorbate_combo_box.addItems(["N2", "Ar", "Kr", "Xe", "CO2", "Custom"])
+        self.adsorbate_combo_box.addItems(["N2", "Ar", "Kr", "Xe", "Custom"])
         self.adsorbate_cross_section_label = QLabel('Cross sectional area (nm<sup>2</sup>):')
         self.adsorbate_cross_section_edit = QLineEdit()
         self.adsorbate_cross_section_edit.setMaximumWidth(75)
@@ -223,9 +223,17 @@ class BETSI_widget(QWidget):
             """Hints:
    - For convenience, it is best to first set your desired criteria before importing the input file.
    - Drag and drop the input file into the BETSI window.
-   - Valid input file formats: *.csv, *.txt, *.aif
+   - Valid input file formats: 
+     # Adsorption Information File: *.aif
+     # Two-column data files: *.csv, *.txt
+     # Micromeritics: *.XLS
+   - Valid value range for parameters are given in brackets "[ ]"
    - Make sure to read the warnings that may pop up after BET calculation.  
    - After the first run, by modifiying any of the parameters above, the calculations will rerun automatically.
+   - Regarding the minimum number of points, Rouquerol suggested 10 points, but you can lower the number if the data has insufficient number of points.
+   - Units: "Relative pressure" is dimensionless and "Quantity adsorbed" is in (cm\u00B3 STP/g).
+   - When the calculation is done, by clicking on any points on the "Filtered BET Areas" plot, all the plots will change to the corresponding selected points range.
+   - If the calculation takes longer than expected, bear with it. In case you see "Not responding", it means it is still running, otherwise the software would crash.
    """)
         self.note_label.setStyleSheet("background-color: lightblue")
         self.note_label.setMargin(10)
@@ -411,7 +419,7 @@ class BETSI_widget(QWidget):
 
         ## assert self.target_filepath, "You must provide a csv file before calling run."
         if not self.target_filepath:
-            warnings = "You must provide an input file (e.g. *.csv, *.txt, *.aif) before calling run. Press \"Clear\" and try again. Please refer to the \"Hints\" box for a quick guide."
+            warnings = "You must provide an input file (e.g. *.csv, *.txt, *.aif, *.XLS) before calling run. Press \"Clear\" and try again. Please refer to the \"Hints\" box for a quick guide."
             information = ""
             self.show_dialog(warnings, information)
             return
@@ -599,7 +607,8 @@ class BETSI_widget(QWidget):
         csv_paths = Path(dir_path).glob('*.csv')
         aif_paths = Path(dir_path).glob('*.aif')
         txt_paths = Path(dir_path).glob('*.txt')
-        input_file_paths = (*csv_paths, *aif_paths, txt_paths)
+        XLS_paths = Path(dir_path).glob('*.XLS')
+        input_file_paths = (*csv_paths, *aif_paths, *txt_paths, *XLS_paths)
 
         ##for file_path in csv_paths:
         for file_path in input_file_paths:
@@ -629,7 +638,7 @@ class BETSI_widget(QWidget):
         self.rouq2_tick.setCheckState(True)
         self.rouq3_tick.setCheckState(True)
         self.rouq4_tick.setCheckState(True)
-        self.rouq5_tick.setCheckState(False)
+        self.rouq5_tick.setCheckState(True)
 
         # the ticks can only be on or off - Not sure why I need to do this every time, but doesn't matter
         self.rouq1_tick.setTristate(False)
@@ -772,7 +781,7 @@ class BETSI_widget(QWidget):
         self.results_table.setColumnCount(2)
         self.results_table.setRowCount(0)
         self.results_table.setHorizontalHeaderLabels(
-            ['Relative pressure (p/p\u2080)', 'Quantity adsorbed (cm\u00B3/g)'])
+            ['Relative pressure (p/p\u2080)', 'Quantity adsorbed (cm\u00B3 STP/g)'])
         self.results_table.setColumnWidth(0, 250)
         self.results_table.setColumnWidth(1, 250)
 

@@ -3,12 +3,13 @@
 """
 from pathlib import Path
 
+import pandas as pd
 import numpy as np
 from scipy.interpolate import splrep, PchipInterpolator, pchip_interpolate
 
 
 def get_data(input_file):
-    """Read pressure and Nitrogen uptake data from file. Asserts pressures in units of bar.
+    """Read pressure and adsorbate uptake data from file. Asserts pressures in units of bar.
 
     Args:
         input_file: Path the path to the input file
@@ -19,7 +20,9 @@ def get_data(input_file):
     input_file = Path(input_file)
 
     if str(input_file).find('.txt') != -1 or str(input_file).find('.aif') != -1 or str(input_file).find('.csv') != -1:
-        pressure, q_adsorbed = get_data_for_txt_aif_csv(str(input_file))
+        pressure, q_adsorbed = get_data_for_txt_aif_csv_two_columns(str(input_file))
+    elif str(input_file).find('.XLS') != -1:
+        pressure, q_adsorbed = get_data_from_micromeritics_xls(str(input_file))
     else:
         pressure = np.array([])
         q_adsorbed = np.array([])
@@ -84,7 +87,7 @@ def get_fitted_spline(pressure, q_adsorbed):
 
     Args:
         pressure: Array of relative pressure values.
-        q_adsorbed: Array of Nitrogen uptake values.
+        q_adsorbed: Array of adsorbate uptake values.
 
     Returns:
         tck tuple of spline parameters.
@@ -96,7 +99,7 @@ def get_pchip_interpolation(pressure,q_adsorbed):
     
     Args:
         pressure: Array of relative pressure values
-        q_adsorbed: Array of Nitrogen uptake values
+        q_adsorbed: Array of adsorbate uptake values
 
     Returns:
         Pchip parameters
@@ -108,9 +111,9 @@ def isotherm_pchip_reconstruction(pressure, q_adsorbed, num_of_interpolated_poin
     calculate BET area for difficult isotherms
     
     Args: pressure: Array of relative pressure values
-    q_adsorbed: Array of Nitrogen uptake values
+    q_adsorbed: Array of adsorbate uptake values
     
-    Returns: Array of interpolated nitrogen uptake values
+    Returns: Array of interpolated adsorbate uptake values
     
     """
     ## x_range = np.linspace(pressure[0], pressure[len(pressure) -1 ], 500)
@@ -144,8 +147,8 @@ def isotherm_pchip_reconstruction(pressure, q_adsorbed, num_of_interpolated_poin
     
     return pressure_new, q_adsorbed_new
         
-def get_data_for_txt_aif_csv(input_file):
-    """ Read pressure and Nitrogen uptake data from file if the file extension is *.txt or *.aif.    
+def get_data_for_txt_aif_csv_two_columns(input_file):
+    """ Read pressure and adsorbate uptake data from file if the file extension is *.txt or *.aif.    
     this function will be called in the get_data() function, and should not be called alone anywhere in the code
     as it might cause some errors.
     
@@ -219,5 +222,93 @@ def get_data_for_txt_aif_csv(input_file):
         
     pressure = np.array(pressure)
     q_adsorbed = np.array(q_adsorbed)
+    
+    return pressure, q_adsorbed
+
+def get_data_from_micromeritics_xls(input_file):
+    """ Read pressure and adsorbate uptake data from Micromeritics output files with *.XLS extension    
+    this function will be called in the get_data() function, and should not be called alone anywhere in the code
+    as it might cause some errors.
+    
+    Args:
+        input_file: String of the path to the input file
+
+    Returns:
+        Pressure and Quantity adsorbed.
+    """
+    
+    # pressure = []
+    # q_adsorbed = []
+    
+    excel_file = pd.ExcelFile(input_file)
+
+    if len(excel_file.sheet_names) == 1:
+        excel_df = pd.read_excel(input_file, sheet_name=0)
+        column_num = 0
+        for column in excel_df.columns:
+            if len(excel_df.loc[excel_df[column]=='Isotherm Linear Plot']) > 0:
+                keyword_column_name = column
+                keyword_index = excel_df.loc[excel_df[column]=='Isotherm Linear Plot'].index[0]
+                
+                adsorption_data_start_index = 0
+                for row_num in range(keyword_index+1, len(excel_df.index)):
+                    if excel_df[keyword_column_name][row_num] == "Relative Pressure (p/p°)":
+                        adsorption_data_start_index = row_num + 1
+                
+                nan_indexes_in_column = np.array(excel_df.loc[excel_df[column].isnull()].index)
+                adsorption_data_stop_index = nan_indexes_in_column[np.argmax(nan_indexes_in_column > adsorption_data_start_index)] - 1
+                
+                if adsorption_data_stop_index < adsorption_data_start_index:
+                    adsorption_data_stop_index = len(excel_df.index) - 1
+                
+                if adsorption_data_start_index > 0:
+                    pressure = np.array(excel_df[keyword_column_name][adsorption_data_start_index:adsorption_data_stop_index+1])
+                    q_adsorbed = np.array(excel_df[excel_df.columns[column_num+1]][adsorption_data_start_index:adsorption_data_stop_index+1])
+                else:
+                    pressure = np.array([])
+                    q_adsorbed = np.array([])
+
+                break
+            column_num += 1
+
+    elif len(excel_file.sheet_names) == 0:
+        pressure = np.array([])
+        q_adsorbed = np.array([])
+    else:
+        try:
+            excel_df = pd.read_excel(input_file, sheet_name="Isotherm Linear Plot")
+            column_num = 0
+            for column in excel_df.columns:
+                if len(excel_df.loc[excel_df[column]=='Isotherm Linear Plot']) > 0:
+                    keyword_column_name = column
+                    keyword_index = excel_df.loc[excel_df[column]=='Isotherm Linear Plot'].index[0]
+                    
+                    adsorption_data_start_index = 0
+                    for row_num in range(keyword_index+1, len(excel_df.index)):
+                        if excel_df[keyword_column_name][row_num] == "Relative Pressure (p/p°)":
+                            adsorption_data_start_index = row_num + 1
+                    
+                    nan_indexes_in_column = np.array(excel_df.loc[excel_df[column].isnull()].index)
+                    adsorption_data_stop_index = nan_indexes_in_column[np.argmax(nan_indexes_in_column > adsorption_data_start_index)] - 1
+                    
+                    if adsorption_data_stop_index < adsorption_data_start_index:
+                        adsorption_data_stop_index = len(excel_df.index) - 1
+                    
+                    if adsorption_data_start_index > 0:
+                        pressure = np.array(excel_df[keyword_column_name][adsorption_data_start_index:adsorption_data_stop_index+1])
+                        q_adsorbed = np.array(excel_df[excel_df.columns[column_num+1]][adsorption_data_start_index:adsorption_data_stop_index+1])
+                    else:
+                        pressure = np.array([])
+                        q_adsorbed = np.array([])
+
+                    break
+                column_num += 1
+                
+        except ValueError:
+            pressure = np.array([])
+            q_adsorbed = np.array([])
+    
+    pressure = np.float64(pressure)
+    q_adsorbed = np.float64(q_adsorbed)
     
     return pressure, q_adsorbed
