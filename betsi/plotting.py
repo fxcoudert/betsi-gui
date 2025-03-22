@@ -261,10 +261,10 @@ def plot_isotherm(bet_filtered, ax=None):
     # plot pchip interpolation
     ax.plot(bet_filtered.x_range, pchip_interpolate(bet_filtered.pressure, bet_filtered.q_adsorbed, bet_filtered.x_range), color='black', alpha=.75, label='Pchip Interpolation')
     # plot corresponding pressure
-    ax.scatter(bet_filtered.corresponding_pressure_pchip[min_i, min_j], bet_filtered.nm[min_i, min_j], marker='^', color='blue', edgecolor='blue', label='$\mathregular{N_m}$ Read', alpha=0.50)
+    ax.scatter(bet_filtered.corresponding_pressure_pchip[min_i, min_j], bet_filtered.nm[min_i, min_j], marker='^', color='blue', edgecolors='blue', label='$\mathregular{N_m}$ Read', alpha=0.50)
 
     # Plot selected Monolayer loading (single point)
-    ax.scatter(bet_filtered.calc_pressure[min_i, min_j], bet_filtered.nm[min_i, min_j], marker='v', color='green', edgecolors='green', edgecolor='green', label='$\mathregular{N_m}$ BET')
+    ax.scatter(bet_filtered.calc_pressure[min_i, min_j], bet_filtered.nm[min_i, min_j], marker='v', color='green', edgecolors='green', label='$\mathregular{N_m}$ BET')
 
     # Plot the BET curve derived from BET theory
     ax.plot(bet_filtered.x_range, bet_filtered.bet_curve, c='g', label='BET Fit', alpha=.5)
@@ -638,9 +638,9 @@ def plot_box_and_whisker(bet_filtered, ax=None):
     x_2 = np.random.normal(1, 0.04, size=len(y_2))
 
     # Plot the filtered BET areas
-    ax.scatter(x_2, y_2, alpha=0.5, color='red', edgecolor='red')
-    ax.scatter(x, y, color='blue', edgecolor='blue', alpha=0.5)
-    ax.scatter(x_min, y_min, marker='s', color='orange', edgecolor='orange')
+    ax.scatter(x_2, y_2, alpha=0.5, color='red', edgecolors='red')
+    ax.scatter(x, y, color='blue', edgecolors='blue', alpha=0.5)
+    ax.scatter(x_min, y_min, marker='s', color='orange', edgecolors='orange')
 
     if len(x)==0:
         ax.set_xlim([.75,1.25])
