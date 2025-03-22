@@ -392,6 +392,8 @@ class BETSI_widget(QWidget):
         if self.current_fig is not None:
             self.current_fig.clear()
             self.current_fig_2.clear()
+        if not self.target_filepath:
+            return
         try:
             # check if the figure has been closed, if it doesn't reset it to none and replot
             if self.current_fig is not None and not plt.fignum_exists(self.current_fig.number):
