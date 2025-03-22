@@ -126,7 +126,7 @@ class BETResult:
                     [np.ones([num_points, 1]), pressure[:, None]], axis=1)
                 params, residuals, _, _ = np.linalg.lstsq(
                     x[i:j, :], self.linear_y[i:j], rcond=None)
-                if residuals:
+                if len(residuals):
                     r2 = 1. - residuals / \
                         (self.linear_y[i:j].size * self.linear_y[i:j].var())
                     self.fit_rsquared[i, j - 1] = r2
