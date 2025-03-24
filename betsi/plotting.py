@@ -115,7 +115,7 @@ def regression_diagnostics_plots(bet_filtered, name, fig_2=None):
     sns.regplot(x=fit_values, y=fit_stud_resid_abs_sqrt, scatter=False, ci=False, lowess=True, line_kws={'color': 'black', 'lw': 1, 'alpha': .75}, ax=scale_loc)
     scale_loc.set_title('Scale-Location')
     scale_loc.set_xlabel('Fitted Values')
-    scale_loc.set_ylabel('$\mathregular{\sqrt{|Studentized\ Residuals|}}$')
+    scale_loc.set_ylabel(r'$\mathregular{\sqrt{|Studentized\ Residuals|}}$')
     scale_loc.tick_params(axis='both', which='major', labelsize=9)
     scale_loc.tick_params(axis='both', which='minor', labelsize=9)
 
@@ -261,10 +261,10 @@ def plot_isotherm(bet_filtered, ax=None):
     # plot pchip interpolation
     ax.plot(bet_filtered.x_range, pchip_interpolate(bet_filtered.pressure, bet_filtered.q_adsorbed, bet_filtered.x_range), color='black', alpha=.75, label='Pchip Interpolation')
     # plot corresponding pressure
-    ax.scatter(bet_filtered.corresponding_pressure_pchip[min_i, min_j], bet_filtered.nm[min_i, min_j], marker='^', color='blue', edgecolors='blue', label='$\mathregular{N_m}$ Read', alpha=0.50)
+    ax.scatter(bet_filtered.corresponding_pressure_pchip[min_i, min_j], bet_filtered.nm[min_i, min_j], marker='^', color='blue', edgecolors='blue', label=r'$\mathregular{N_m}$ Read', alpha=0.50)
 
     # Plot selected Monolayer loading (single point)
-    ax.scatter(bet_filtered.calc_pressure[min_i, min_j], bet_filtered.nm[min_i, min_j], marker='v', color='green', edgecolors='green', label='$\mathregular{N_m}$ BET')
+    ax.scatter(bet_filtered.calc_pressure[min_i, min_j], bet_filtered.nm[min_i, min_j], marker='v', color='green', edgecolors='green', label=r'$\mathregular{N_m}$ BET')
 
     # Plot the BET curve derived from BET theory
     ax.plot(bet_filtered.x_range, bet_filtered.bet_curve, c='g', label='BET Fit', alpha=.5)
@@ -585,7 +585,7 @@ def plot_monolayer_loadings(bet_filtered, ax=None):
     ax.plot(bet_filtered.x_range, pchip_interpolate(bet_filtered.pressure, bet_filtered.q_adsorbed, bet_filtered.x_range), color='black',alpha=.5, label='Pchip Interpolation')
 
     # Plot the valid monolayer loadings.
-    ax.scatter(bet_filtered.valid_calc_pressures, bet_filtered.valid_nm, marker='^', color='blue', edgecolors='blue', label='$\mathregular{N_m}$ valid', alpha=0.5)
+    ax.scatter(bet_filtered.valid_calc_pressures, bet_filtered.valid_nm, marker='^', color='blue', edgecolors='blue', label=r'$\mathregular{N_m}$ valid', alpha=0.5)
 
     # Plot the valid optimum linear range
     ax.scatter(bet_filtered.pressure[min_i:min_j + 1], bet_filtered.q_adsorbed[min_i:min_j + 1], marker='s', color='red', edgecolors='red', label='Linear Range', alpha=0.5)
