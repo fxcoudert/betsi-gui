@@ -75,7 +75,7 @@ def regression_diagnostics_plots(bet_filtered, name, fig_2=None):
 
     # "Residual vs fitted" plot
     resid_vs_fit = fig_2.add_subplot(2, 2, 1)
-    sns.residplot(fit_values, fit_resid, data=dataframe,
+    sns.residplot(x=fit_values, y=fit_resid,
                   lowess=True,
                   scatter_kws={'alpha': .5, 'color': 'red'},
                   line_kws={'color': 'black', 'lw': 1, 'alpha': 0.75},
@@ -112,7 +112,7 @@ def regression_diagnostics_plots(bet_filtered, name, fig_2=None):
     # "Scale-location" plot
     scale_loc = fig_2.add_subplot(2, 2, 3)
     scale_loc.scatter(fit_values, fit_stud_resid_abs_sqrt, alpha=.5, c = 'red')
-    sns.regplot(fit_values, fit_stud_resid_abs_sqrt, scatter=False, ci=False, lowess=True, line_kws={'color': 'black', 'lw': 1, 'alpha': .75}, ax=scale_loc)
+    sns.regplot(x=fit_values, y=fit_stud_resid_abs_sqrt, scatter=False, ci=False, lowess=True, line_kws={'color': 'black', 'lw': 1, 'alpha': .75}, ax=scale_loc)
     scale_loc.set_title('Scale-Location')
     scale_loc.set_xlabel('Fitted Values')
     scale_loc.set_ylabel('$\mathregular{\sqrt{|Studentized\ Residuals|}}$')
@@ -131,7 +131,7 @@ def regression_diagnostics_plots(bet_filtered, name, fig_2=None):
     # "Residuals vs leverage" plot
     res_vs_lev = fig_2.add_subplot(2, 2, 4)
     res_vs_lev.scatter(fit_leverage, fit_stud_resid, alpha=.5, color = 'red')
-    sns.regplot(fit_leverage, fit_stud_resid, scatter=False, ci=False, lowess=True, line_kws={'color': 'black', 'lw': 1, 'alpha': .75}, ax=res_vs_lev)
+    sns.regplot(x=fit_leverage, y=fit_stud_resid, scatter=False, ci=False, lowess=True, line_kws={'color': 'black', 'lw': 1, 'alpha': .75}, ax=res_vs_lev)
     res_vs_lev.axes.set_title('Residuals vs Leverage')
     res_vs_lev.axes.set_xlabel('Leverage')
     res_vs_lev.axes.set_ylabel('Studentized Residuals')
